@@ -9,6 +9,11 @@
 - 术语表：`translations/terminology.md`
 - 维护脚本：`translations/zh_CN/_meta/`
 
+本项目以该提交的官方文档为固定快照，目标是补齐中文内容，支持通过中文学习 gem5。
+后续翻译和勘误均以仓库内保存的英文基线为依据，不持续同步上游版本。
+“查看英文源文”链接固定到上述提交；“English”入口和未翻译页面的回退链接仍访问
+官方英文站，其内容可能不同于本仓库快照。
+
 ## 目录结构
 
 ```
@@ -24,6 +29,7 @@
         ├── _includes/ _layouts/      # 界面模板（已中文化）
         ├── _plugins/site_links.rb    # 根据实际译文与英文 permalink 解析链接
         ├── _pages/ _posts/ blog/     # 与英文同路径的中文页面
+        ├── pages/static -> ../../../_pages/static  # 教程图片与示例下载
         ├── _meta/                    # 清单、导航抽取与生成脚本
         └── assets css _sass -> ../../  # 软链接复用上游静态资源，不复制
 ```
@@ -40,6 +46,7 @@ python3 tools/check_site_links.py builds/zh-site
 ```
 
 `translations/zh_CN/` 通过相对软链接引用仓库根目录的 `assets/`、`css/`、`_sass/`，
+并将 `_pages/static/` 发布到 `pages/static/`，供教程图片和示例下载使用，
 因此**必须在包含英文基线的仓库中构建**，不要单独把 `zh_CN/` 复制出去。
 
 依赖在 `translations/zh_CN/Gemfile` 中单独声明（Jekyll 4）。上游仓库根目录的
@@ -68,25 +75,32 @@ python3 tools/check_site_links.py builds/zh-site
 
 | 项目 | 数值 |
 | --- | --- |
-| 英文手写文件总数 | 193（`_pages/` 155 + `_posts/` 33 + 首页/搜索/博客/404） |
+| 英文手写文件总数 | 192（按路径去重：`_pages/` 156 + `_posts/` 33 + 首页/博客/404；搜索已计入 `_pages/`） |
 | 合计词数 | 218,028 |
-| 已完成初译 | 84 个文件，约 8.7 万词（39.9%） |
-| 构建校验 | `jekyll build` 零错误，生成 85 个 HTML 页面 |
+| 已完成初译 | 114 个文件，对应英文 126,630 词（58.1%） |
+| Learning gem5 | 35/35 篇已有译文，本批补齐原先缺少的 31 篇 |
+| 构建校验 | `jekyll build` 零错误，生成 116 个 HTML 页面 |
 | 在线地址 | <https://gevico.github.io/gem5-doc-zh/>（GitHub Actions 自动部署） |
 | 站内链接校验 | 检查构建后全部 HTML 中的链接与资源目标；存在断链时禁止部署 |
 
 已完成的模块：站点界面（导航 / 页脚 / 首页 / 搜索 / 博客列表 / 404 / 6 个 layout）、
 全部顶层页面（关于、快速开始、提问、参与贡献、项目治理、论文发表、加入 Slack）、
-`documentation/general_docs/` 全部子目录（含 memory_system、cpu_models、
+`documentation/general_docs/` 的主要教程（含 memory_system、cpu_models、
 architecture_support、debugging_and_testing、fullsystem、gpu_models、statistics、
 compiling_workloads 等）、`general_docs/ruby/` 全部 14 篇、
-`gem5-stdlib/` 全部 8 篇。
+`gem5-stdlib/` 全部 8 篇，以及 `learning_gem5/` 全部 35 篇（含 gem5 101 课程练习）。
 
-待完成：`_posts/` 33 篇、`learning_gem5/` 31 篇、`community/events/` 24 篇、
-`gem5art/` 12 篇、GB 级长文 3 篇（`minor_cpu`、`isa_parser`、`x86_microop_isa`）及零星 6 篇。
+待完成：`_posts/` 33 篇、`community/events/` 24 篇、`gem5art/` 12 篇、
+`general_docs/` 7 篇（`minor_cpu`、`isa_parser`、`x86_microop_isa`、
+开发规范等 3 篇及 Kconfig 构建文档）、`community/dev_meetings/` 2 篇。
 
-> **说明**：以上为「初译完成度」，**不等于人工审定完成**。当前译文仅经过结构校验与构建校验，
-> 尚未逐段进行人工语义审校。使用时请以英文原文为准。
+> **说明**：以上为「初译完成度」，**不等于人工审定完成**。本批 Learning gem5 译文主要由 AI
+> 完成，并进行了技术语义复核、代码与输出块比对、构建及站内链接检查；未逐项执行教程实验，
+> 尚未经人工逐段审定。旧版本接口和原文中已确认的不一致以译注明示。
+
+现有 `_meta/manifest.tsv` 是英文源文件清单，不记录译文状态，其中搜索页有一条重复记录；
+上述数量按文件路径去重统计。本批的审校范围与验证记录见
+[Learning gem5 翻译审校记录](../ai-docs/learning-gem5-translation-review.md)。
 
 ## 源文覆盖范围（有意不译的内容）
 
@@ -167,7 +181,8 @@ python3 tools/check_site_links.py builds/zh-site --baseurl /gem5-doc-zh
 
 ## 续译方式
 
-1. 用 `_meta/make_manifest.py` 生成 / 刷新清单，对照 `_meta/manifest.tsv` 取下一个待译文件。
+1. 对照 `_meta/manifest.tsv` 取下一个待译文件；需要重新统计时，用 `_meta/make_manifest.py`
+   从仓库内的固定英文基线生成清单。
 2. 英文原文在同名相对路径的仓库根目录下；译文写到 `translations/zh_CN/<完全相同的相对路径>`。
 3. 文档页 front matter 约定：
    - `title`：按上述术语约定书写，并与 `_meta/nav_zh.tsv` 中对应条目保持一致；
